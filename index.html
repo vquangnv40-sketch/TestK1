@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tập Vẽ Tranh Cùng AI - Cọ Thần Kỳ Diệu Cho Bé</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Times New Roman"', 'Times', 'serif'],
+                        serif: ['"Times New Roman"', 'Times', 'serif']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 2s infinite',
+                        'sparkle': 'sparkle 1.5s ease-in-out infinite',
+                        'bounce-short': 'bounceShort 1s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+                            '50%': { opacity: '0.85', transform: 'scale(1.02)' }
+                        },
+                        sparkle: {
+                            '0%, 100%': { opacity: '0.3', transform: 'scale(0.8) rotate(0deg)' },
+                            '50%': { opacity: '1', transform: 'scale(1.2) rotate(15deg)' }
+                        },
+                        bounceShort: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            font-family: 'Times New Roman', Times, serif !important;
+        }
+
+        body {
+            background-color: #F7F4FF;
+            background-image: 
+                radial-gradient(#E5D9FF 2px, transparent 2px), 
+                radial-gradient(#E5D9FF 2px, #F7F4FF 2px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+        }
+
+        .custom-card {
+            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .custom-card:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 10px 20px -5px rgba(168, 85, 247, 0.25);
+        }
+
+        .custom-card.selected {
+            border-color: #9333EA !important;
+            background-color: #F3E8FF !important;
+            box-shadow: 0 4px 12px -2px rgba(147, 51, 234, 0.4);
+            transform: scale(1.02);
+        }
+
+        #sparkle-canvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F1F1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C4B5FD;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col text-slate-800 select-none bg-[#F7F4FF]">
+
+    <div id="toast-container" class="fixed top-3 right-3 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <header class="shrink-0 bg-white/95 backdrop-blur-md border-b border-purple-100 px-3 py-1.5 shadow-xs z-40">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-9 h-9 bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-400 rounded-xl flex items-center justify-center text-white text-lg shadow-xs animate-float">
+                    🎨
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg text-purple-950 leading-tight flex items-center gap-1.5">
+                        TẬP VẼ TRANH CÙNG AI
+                        <span class="text-[9px] sm:text-[10px] bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold px-2 py-0.5 rounded-full shadow-xs">✨ CHO BÉ</span>
+                    </h1>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+                <button onclick="getRandomPromptPreset()" class="px-2.5 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 transition flex items-center gap-1 font-bold text-xs border border-amber-200 cursor-pointer">
+                    <i class="fa-solid fa-dice text-amber-600"></i>
+                    <span>Gợi ý</span>
+                </button>
+                <button onclick="openGalleryModal()" class="px-2.5 py-1 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-800 transition flex items-center gap-1 font-bold text-xs border border-pink-200 cursor-pointer">
+                    <i class="fa-solid fa-images text-pink-600"></i>
+                    <span>Bộ sưu tập</span>
+                </button>
+                <button onclick="openSettingsModal()" class="px-2.5 py-1 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 transition flex items-center gap-1 font-bold text-xs border border-slate-200 cursor-pointer">
+                    <i class="fa-solid fa-gear text-slate-600"></i>
+                    <span>Cài đặt (GV)</span>
+                </button>
+                <button onclick="toggleSound()" id="sound-btn" class="px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 transition flex items-center gap-1 font-bold text-xs border border-purple-200 cursor-pointer">
+                    <i class="fa-solid fa-volume-high text-xs"></i>
+                    <span>Âm thanh</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 min-h-0 max-w-7xl mx-auto w-full p-2.5 grid grid-cols-12 gap-3 overflow-hidden">
+        
+        <!-- LEFT COLUMN: STEPS AND FORMULA (7 Cols) -->
+        <div class="col-span-12 lg:col-span-7 flex flex-col min-h-0 justify-between gap-1.5">
+            
+            <!-- BƯỚC 1: CHỌN ĐỘNG VẬT -->
+            <div class="bg-white rounded-2xl p-2 border border-purple-100 shadow-2xs flex flex-col justify-center">
+                <div class="flex items-center justify-between mb-1">
+                    <h2 class="text-xs text-purple-950 flex items-center gap-1.5 font-bold">
+                        <span class="w-4 h-4 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-[10px] font-black">1</span>
+                        Bước 1: Chọn Con Vật 🐶
+                    </h2>
+                </div>
+                <div class="grid grid-cols-6 gap-1" id="animal-grid">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+
+            <!-- BƯỚC 2: CHỌN HÀNH ĐỘNG -->
+            <div class="bg-white rounded-2xl p-2 border border-purple-100 shadow-2xs flex flex-col justify-center">
+                <div class="flex items-center justify-between mb-1">
+                    <h2 class="text-xs text-purple-950 flex items-center gap-1.5 font-bold">
+                        <span class="w-4 h-4 bg-pink-100 text-pink-700 rounded-full flex items-center justify-center text-[10px] font-black">2</span>
+                        Bước 2: Bạn ấy làm gì? 🏃
+                    </h2>
+                </div>
+                <div class="grid grid-cols-6 gap-1" id="action-grid">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+
+            <!-- BƯỚC 3 & 4: BỐI CẢNH & PHONG CÁCH COMBINED -->
+            <div class="grid grid-cols-2 gap-1.5">
+                <div class="bg-white rounded-2xl p-2 border border-purple-100 shadow-2xs flex flex-col justify-center">
+                    <h2 class="text-xs text-purple-950 flex items-center gap-1 font-bold mb-1">
+                        <span class="w-4 h-4 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-[10px] font-black">3</span>
+                        Bối Cảnh 🏰
+                    </h2>
+                    <div class="grid grid-cols-3 gap-1" id="bg-grid">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-2 border border-purple-100 shadow-2xs flex flex-col justify-center">
+                    <h2 class="text-xs text-purple-950 flex items-center gap-1 font-bold mb-1">
+                        <span class="w-4 h-4 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center text-[10px] font-black">4</span>
+                        Phong Cách 🎨
+                    </h2>
+                    <div class="grid grid-cols-3 gap-1" id="style-grid">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMULA & CTA BOX -->
+            <div class="bg-gradient-to-r from-purple-800 via-pink-600 to-purple-700 rounded-2xl p-2.5 text-white shadow-md relative overflow-hidden flex flex-col justify-between shrink-0">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-purple-100 flex items-center gap-1">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> CÂU LỆNH CỦA BÉ:
+                    </span>
+                    <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded-full text-white font-semibold">Cọ Thần AI Gemini ✨</span>
+                </div>
+
+                <div id="prompt-formula-box" class="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl px-2.5 py-1.5 mb-1.5 text-xs sm:text-sm font-bold text-amber-200 text-center leading-snug">
+                    "Vẽ <span id="p-animal" class="underline decoration-amber-300">Con Voi 🐘</span> <span id="p-action" class="underline decoration-pink-300">Ăn trái cây 🍎</span> ở <span id="p-bg" class="underline decoration-blue-300">Trong rừng 🌲</span> style <span id="p-style" class="underline decoration-green-300">Hoạt hình 3D 🧸</span>"
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <input type="text" id="extra-prompt" placeholder="Thêm chi tiết: vương miện, cầu vồng..." 
+                        class="flex-1 bg-white/20 text-white placeholder-purple-200 text-xs rounded-xl px-2.5 py-1.5 border border-white/30 focus:outline-none focus:ring-1 focus:ring-amber-300">
+                    
+                    <button onclick="generateArtWithGemini()" id="btn-create" class="bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-900 text-xs sm:text-sm py-1.5 px-4 rounded-xl shadow-md font-bold cursor-pointer hover:scale-105 active:scale-95 transition flex items-center gap-1 shrink-0">
+                        <i class="fa-solid fa-paintbrush text-purple-950"></i>
+                        TẠO TRANH ✨
+                    </button>
+                    <button onclick="resetAllSelections()" class="bg-white/20 text-white font-bold px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-xs cursor-pointer hover:bg-white/30 shrink-0">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: CANVAS & DISPLAY (5 Cols) -->
+        <div class="col-span-12 lg:col-span-5 flex flex-col min-h-0 bg-white rounded-2xl p-2 border border-purple-100 shadow-2xs">
+            
+            <div class="flex items-center justify-between mb-1.5 shrink-0">
+                <h3 class="text-xs text-purple-950 font-bold flex items-center gap-1.5">
+                    <i class="fa-solid fa-palette text-pink-500"></i> Bức Tranh Của Bé
+                </h3>
+                <div id="badge-status" class="hidden text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-star text-amber-500"></i> Tuyệt Tác!
+                </div>
+            </div>
+
+            <!-- Canvas Container filling remaining vertical space -->
+            <div class="flex-1 min-h-0 w-full bg-slate-900 rounded-xl border border-purple-200 overflow-hidden relative flex items-center justify-center shadow-inner" id="canvas-wrapper">
+                
+                <canvas id="sparkle-canvas"></canvas>
+
+                <!-- Placeholder State -->
+                <div id="placeholder-state" class="text-center p-4 space-y-2 bg-gradient-to-b from-purple-900/40 to-pink-900/40 w-full h-full flex flex-col items-center justify-center">
+                    <div class="w-14 h-14 bg-purple-100/90 text-purple-600 rounded-2xl flex items-center justify-center text-3xl shadow-md animate-float">
+                        🖼️
+                    </div>
+                    <p class="text-white text-sm font-bold">Bức tranh kỳ diệu đang chờ bé!</p>
+                    <p class="text-[11px] text-purple-200 max-w-[200px] leading-snug">Chọn ý tưởng rồi bấm <b class="text-amber-300">"TẠO TRANH ✨"</b> nhé!</p>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading-state" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4 text-center space-y-3">
+                    <div class="relative w-14 h-14">
+                        <div class="absolute inset-0 border-3 border-purple-500/30 border-t-amber-400 rounded-full animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-xl animate-pulse">🪄</div>
+                    </div>
+                    <div>
+                        <p class="text-amber-300 text-sm font-bold">AI Gemini đang vẽ tranh...</p>
+                        <p id="loading-step-text" class="text-[11px] text-purple-200 font-semibold mt-0.5">Đang kết nối Cọ Thần...</p>
+                        <div class="w-36 bg-purple-950/60 h-2 rounded-full mt-2 overflow-hidden border border-purple-500/40 mx-auto">
+                            <div id="loading-bar" class="bg-gradient-to-r from-amber-400 to-pink-500 h-full w-0 transition-all duration-500"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated Image -->
+                <img id="result-img" alt="Bức tranh sáng tạo của bé" class="hidden w-full h-full object-contain">
+
+                <!-- Drawing Canvas overlay for stickers -->
+                <canvas id="drawing-canvas" class="hidden absolute inset-0 pointer-events-auto z-20 cursor-crosshair"></canvas>
+
+                <!-- Sticker Toolbar -->
+                <div id="sticker-toolbar" class="hidden absolute bottom-1.5 left-1.5 right-1.5 bg-white/95 backdrop-blur-md p-1 rounded-xl shadow-md border border-purple-200 z-30 flex items-center justify-between text-[11px]">
+                    <span class="font-bold text-purple-900 shrink-0 flex items-center gap-1">
+                        <i class="fa-solid fa-stamp text-pink-500"></i> Dán:
+                    </span>
+                    <div class="flex items-center gap-1.5 overflow-x-auto" id="sticker-selector">
+                        <button onclick="setActiveSticker('⭐')" class="hover:scale-125 transition text-base cursor-pointer">⭐</button>
+                        <button onclick="setActiveSticker('👑')" class="hover:scale-125 transition text-base cursor-pointer">👑</button>
+                        <button onclick="setActiveSticker('🪄')" class="hover:scale-125 transition text-base cursor-pointer">🪄</button>
+                        <button onclick="setActiveSticker('❤️')" class="hover:scale-125 transition text-base cursor-pointer">❤️</button>
+                        <button onclick="setActiveSticker('🌈')" class="hover:scale-125 transition text-base cursor-pointer">🌈</button>
+                        <button onclick="setActiveSticker('🎈')" class="hover:scale-125 transition text-base cursor-pointer">🎈</button>
+                    </div>
+                    <button onclick="clearStickers()" class="text-red-500 text-[10px] px-1.5 py-0.5 rounded-lg bg-red-50 font-bold shrink-0 cursor-pointer">Xóa dán</button>
+                </div>
+            </div>
+
+            <!-- Story Banner -->
+            <div id="story-banner" class="hidden mt-1.5 p-2 bg-purple-50 border border-purple-200 rounded-xl text-[11px] text-purple-950 shrink-0">
+                <div class="flex items-center justify-between font-bold mb-0.5">
+                    <span class="flex items-center gap-1 text-purple-900">
+                        <i class="fa-solid fa-book-open-reader text-pink-500"></i> Câu Chuyện Tranh
+                    </span>
+                    <button onclick="playFairyStoryTTS()" class="text-[10px] bg-purple-600 hover:bg-purple-700 text-white px-2 py-0.5 rounded-md flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-volume-high"></i> Đọc
+                    </button>
+                </div>
+                <p id="story-text" class="text-slate-700 italic truncate">"Ngày xửa ngày xưa..."</p>
+            </div>
+
+            <!-- Image Actions -->
+            <div id="image-actions" class="hidden grid grid-cols-4 gap-1 mt-1.5 shrink-0">
+                <button onclick="downloadArtwork()" class="bg-purple-50 hover:bg-purple-100 text-purple-950 text-[10px] font-bold py-1.5 rounded-lg border border-purple-200 flex items-center justify-center gap-1 cursor-pointer">
+                    <i class="fa-solid fa-download text-purple-600"></i> Tải về
+                </button>
+                <button onclick="saveToGallery()" class="bg-pink-50 hover:bg-pink-100 text-pink-950 text-[10px] font-bold py-1.5 rounded-lg border border-pink-200 flex items-center justify-center gap-1 cursor-pointer">
+                    <i class="fa-solid fa-heart text-pink-600"></i> Lưu
+                </button>
+                <button onclick="printColoringSheet()" class="bg-amber-50 hover:bg-amber-100 text-amber-950 text-[10px] font-bold py-1.5 rounded-lg border border-amber-200 flex items-center justify-center gap-1 cursor-pointer">
+                    <i class="fa-solid fa-print text-amber-600"></i> Tô màu
+                </button>
+                <button onclick="tellFairyStory()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-950 text-[10px] font-bold py-1.5 rounded-lg border border-emerald-200 flex items-center justify-center gap-1 cursor-pointer">
+                    <i class="fa-solid fa-wand-magic text-emerald-600"></i> Truyện
+                </button>
+            </div>
+
+        </div>
+
+    </main>
+
+    <div id="gallery-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-4 max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-purple-100">
+            <div class="flex items-center justify-between pb-2 border-b border-purple-100 mb-3">
+                <h2 class="text-base text-purple-950 font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-images text-pink-500"></i> Bộ Sưu Tập Bức Tranh Của Bé
+                </h2>
+                <div class="flex items-center gap-2">
+                    <button onclick="clearGallery()" class="text-xs text-red-500 hover:underline font-semibold cursor-pointer">Xóa tất cả</button>
+                    <button onclick="closeGalleryModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 font-bold cursor-pointer">&times;</button>
+                </div>
+            </div>
+
+            <div class="flex-1 min-h-0 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-1" id="gallery-grid">
+                <!-- Javascript renders gallery item cards here -->
+            </div>
+            <p id="empty-gallery-msg" class="text-xs text-center text-slate-400 py-8">Chưa có bức tranh nào được lưu. Bé tạo xong bấm <b class="text-pink-600 font-bold">"Lưu"</b> nhé!</p>
+        </div>
+    </div>
+
+    <!-- Cài đặt API Key (Giáo viên) -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-5 max-w-md w-full flex flex-col shadow-2xl border border-slate-200 relative">
+            <button onclick="closeSettingsModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 font-bold cursor-pointer">&times;</button>
+            
+            <h2 class="text-lg text-slate-800 font-bold flex items-center gap-2 mb-4 border-b pb-2">
+                <i class="fa-solid fa-gear text-slate-500"></i> Cài đặt OpenAI (Dành cho Giáo viên)
+            </h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">OpenAI API Key:</label>
+                    <input type="password" id="api-key-input" placeholder="sk-..." class="w-full text-sm px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <p class="text-[10px] text-slate-500 mt-1">Sử dụng mô hình DALL-E 2 (rẻ nhất) để tạo ảnh.</p>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl">
+                    <p class="text-xs text-amber-800 font-semibold mb-2">
+                        <i class="fa-solid fa-link"></i> Chia sẻ cho học sinh (Không cần dán lại Key)
+                    </p>
+                    <button onclick="generateShareLink()" class="w-full bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold py-2 rounded-xl text-xs transition shadow-sm cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-copy"></i> Copy Link Cho Lớp Học
+                    </button>
+                    <p class="text-[9px] text-amber-700 mt-1.5 text-center leading-tight">
+                        *Lưu ý: Link này chứa API Key của bạn. Chỉ chia sẻ nội bộ lớp học để tránh mất phí không mong muốn.
+                    </p>
+                </div>
+                
+                <div class="flex justify-end pt-2">
+                    <button onclick="saveApiKey()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-xl text-sm transition shadow-md cursor-pointer">
+                        Lưu Cài Đặt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATA CATEGORIES
+        const ANIMALS = [
+            { id: 'voi', vi: 'Con Voi', emoji: '🐘', prompt: 'cute happy baby elephant with big floppy ears' },
+            { id: 'cho', vi: 'Con Chó', emoji: '🐶', prompt: 'adorable golden retriever puppy with big sparkling eyes' },
+            { id: 'meo', vi: 'Con Mèo', emoji: '🐱', prompt: 'cute fluffy kitten with glowing big eyes' },
+            { id: 'tho', vi: 'Con Thỏ', emoji: '🐰', prompt: 'adorable white bunny rabbit with long ears' },
+            { id: 'khi', vi: 'Con Khỉ', emoji: '🐒', prompt: 'playful funny little monkey with a happy smile' },
+            { id: 'sutu', vi: 'Sư Tử', emoji: '🦁', prompt: 'brave cute little lion cub with soft fluffy mane' },
+            { id: 'ho', vi: 'Con Hổ', emoji: '🐯', prompt: 'sweet friendly tiger cub with colorful stripes' },
+            { id: 'gautruc', vi: 'Gấu Trúc', emoji: '🐼', prompt: 'chubby cute panda bear holding bamboo' },
+            { id: 'bo', vi: 'Con Bò', emoji: '🐮', prompt: 'cute friendly baby calf cow' },
+            { id: 'lon', vi: 'Con Lợn', emoji: '🐷', prompt: 'cheerful cute pink piglet with curly tail' },
+            { id: 'ngua', vi: 'Con Ngựa', emoji: '🐴', prompt: 'majestic sweet little pony horse' },
+            { id: 'khunglong', vi: 'Khủng Long', emoji: '🦖', prompt: 'friendly baby green dinosaur with tiny playful spikes' }
+        ];
+
+        const ACTIONS = [
+            { id: 'an', vi: 'Ăn trái cây', emoji: '🍎', prompt: 'happily eating sweet delicious colorful fruits' },
+            { id: 'ngu', vi: 'Ngủ trên mây', emoji: '💤', prompt: 'sleeping peacefully on a soft fluffy floating glowing cloud' },
+            { id: 'chay', vi: 'Chạy tung tăng', emoji: '🏃', prompt: 'running joyfully across field with flower petals floating' },
+            { id: 'nhay', vi: 'Nhảy bắt bướm', emoji: '🦋', prompt: 'jumping happily chasing glowing magical butterflies' },
+            { id: 'boi', vi: 'Bơi lội', emoji: '🏊', prompt: 'swimming happily in sparkling clear turquoise water' },
+            { id: 'bay', vi: 'Bay lượn', emoji: '🕊️', prompt: 'flying high gracefully with magical floating stars' },
+            { id: 'hat', vi: 'Hát ca', emoji: '🎤', prompt: 'singing happily with rainbow musical notes floating in the air' },
+            { id: 'mua', vi: 'Múa ba lê', emoji: '💃', prompt: 'dancing happily in cute costume with sparkly trails' },
+            { id: 'docsach', vi: 'Đọc sách', emoji: '📖', prompt: 'reading a magic glowing fairytale storybook' },
+            { id: 'choibong', vi: 'Chơi bóng', emoji: '⚽', prompt: 'playing happily with a colorful giant bouncing ball' },
+            { id: 'bongbong', vi: 'Thổi bong bóng', emoji: '🎈', prompt: 'blowing giant rainbow soap bubbles into the sky' },
+            { id: 'danđan', vi: 'Đàn nhạc', emoji: '🎸', prompt: 'playing a small cheerful musical instrument' }
+        ];
+
+        const BACKGROUNDS = [
+            { id: 'rung', vi: 'Trong rừng', emoji: '🌲', prompt: 'in an enchanted magical fairytale forest with glowing mushrooms' },
+            { id: 'baibien', vi: 'Bãi biển', emoji: '🏖️', prompt: 'on a tropical sunny beach with golden sand, palm trees' },
+            { id: 'daiduong', vi: 'Đại dương', emoji: '🌊', prompt: 'underwater in a colorful coral reef with glowing bubbles' },
+            { id: 'congvien', vi: 'Công viên', emoji: '🎡', prompt: 'in a joyful fairytale amusement park with ferris wheel' },
+            { id: 'nha', vi: 'Ngôi nhà', emoji: '🏡', prompt: 'in a cozy colorful fairytale mushroom house surrounded by flowers' },
+            { id: 'vutru', vi: 'Vũ trụ', emoji: '🚀', prompt: 'in deep magical space with colorful glowing nebulae, planets' }
+        ];
+
+        const STYLES = [
+            { id: '3d_chibi', vi: '3D Chibi', emoji: '🧸', prompt: '3D Pixar style animation render, soft studio lighting, cute chibi character' },
+            { id: '2d', vi: '2D Cartoon', emoji: '🎨', prompt: 'vibrant 2D cartoon animation artwork, clean soft lines' },
+            { id: 'maunuoc', vi: 'Màu nước', emoji: '🖌️', prompt: 'dreamy fairytale watercolor painting, soft splashes' },
+            { id: 'sondau', vi: 'Sơn dầu', emoji: '🖼️', prompt: 'rich artistic oil painting texture, bright cheerful impressionist style' },
+            { id: 'phim', vi: 'Điện ảnh', emoji: '🎬', prompt: 'cinematic animation movie shot, dynamic lighting, masterpiece' },
+            { id: 'datset', vi: 'Đất sét', emoji: '🧱', prompt: 'cute claymation 3D plasticine model style, smooth clay art texture' }
+        ];
+
+        // Global State Variable
+        let state = {
+            animal: ANIMALS[0],
+            action: ACTIONS[0],
+            background: BACKGROUNDS[0],
+            style: STYLES[0],
+            soundEnabled: true,
+            selectedSticker: '⭐',
+            stickers: [],
+            currentDataUrl: null,
+            currentStory: null,
+            apiKey: ''
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlKey = urlParams.get('key');
+            if (urlKey) {
+                state.apiKey = urlKey;
+                // Xóa key khỏi URL hiển thị trên thanh địa chỉ để học sinh không vô tình copy nhầm, nhưng vẫn giữ trong bộ nhớ
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                state.apiKey = localStorage.getItem('openai_api_key') || '';
+            }
+
+            renderOptionGrids();
+            updatePromptFormula();
+            loadGalleryFromLocalStorage();
+            initSparkleCanvas();
+
+            const canvas = document.getElementById('drawing-canvas');
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                addStickerAt(state.selectedSticker, x, y);
+            });
+        });
+
+        function renderOptionGrids() {
+            // Render Animals (Compact)
+            document.getElementById('animal-grid').innerHTML = ANIMALS.map(item => `
+                <button onclick="selectOption('animal', '${item.id}')" 
+                    class="custom-card p-1 rounded-xl border border-slate-100 flex flex-col items-center justify-center bg-white cursor-pointer ${state.animal.id === item.id ? 'selected' : ''}">
+                    <span class="text-base sm:text-lg">${item.emoji}</span>
+                    <span class="text-[9px] font-bold text-slate-800 truncate w-full text-center leading-none mt-0.5">${item.vi}</span>
+                </button>
+            `).join('');
+
+            // Render Actions (Compact)
+            document.getElementById('action-grid').innerHTML = ACTIONS.map(item => `
+                <button onclick="selectOption('action', '${item.id}')" 
+                    class="custom-card p-1 rounded-xl border border-slate-100 flex flex-col items-center justify-center bg-white cursor-pointer ${state.action.id === item.id ? 'selected' : ''}">
+                    <span class="text-base sm:text-lg">${item.emoji}</span>
+                    <span class="text-[9px] font-bold text-slate-800 truncate w-full text-center leading-none mt-0.5">${item.vi}</span>
+                </button>
+            `).join('');
+
+            // Render Backgrounds (Compact)
+            document.getElementById('bg-grid').innerHTML = BACKGROUNDS.map(item => `
+                <button onclick="selectOption('background', '${item.id}')" 
+                    class="custom-card p-1 rounded-xl border border-slate-100 flex flex-col items-center justify-center bg-white cursor-pointer ${state.background.id === item.id ? 'selected' : ''}">
+                    <span class="text-base">${item.emoji}</span>
+                    <span class="text-[9px] font-bold text-slate-800 truncate w-full text-center leading-none mt-0.5">${item.vi}</span>
+                </button>
+            `).join('');
+
+            // Render Styles (Compact)
+            document.getElementById('style-grid').innerHTML = STYLES.map(item => `
+                <button onclick="selectOption('style', '${item.id}')" 
+                    class="custom-card p-1 rounded-xl border border-slate-100 flex flex-col items-center justify-center bg-white cursor-pointer ${state.style.id === item.id ? 'selected' : ''}">
+                    <span class="text-base">${item.emoji}</span>
+                    <span class="text-[9px] font-bold text-slate-800 truncate w-full text-center leading-none mt-0.5">${item.vi}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectOption(category, id) {
+            playKidSound('click');
+            if (category === 'animal') state.animal = ANIMALS.find(x => x.id === id);
+            if (category === 'action') state.action = ACTIONS.find(x => x.id === id);
+            if (category === 'background') state.background = BACKGROUNDS.find(x => x.id === id);
+            if (category === 'style') state.style = STYLES.find(x => x.id === id);
+
+            renderOptionGrids();
+            updatePromptFormula();
+        }
+
+        function updatePromptFormula() {
+            document.getElementById('p-animal').innerText = `${state.animal.vi} ${state.animal.emoji}`;
+            document.getElementById('p-action').innerText = `${state.action.vi} ${state.action.emoji}`;
+            document.getElementById('p-bg').innerText = `${state.background.vi} ${state.background.emoji}`;
+            document.getElementById('p-style').innerText = `${state.style.vi} ${state.style.emoji}`;
+        }
+
+        function openGalleryModal() {
+            playKidSound('click');
+            loadGalleryFromLocalStorage();
+            document.getElementById('gallery-modal').classList.remove('hidden');
+        }
+
+        function closeGalleryModal() {
+            playKidSound('click');
+            document.getElementById('gallery-modal').classList.add('hidden');
+        }
+
+        function openSettingsModal() {
+            playKidSound('click');
+            document.getElementById('api-key-input').value = state.apiKey;
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            playKidSound('click');
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            playKidSound('click');
+            const key = document.getElementById('api-key-input').value.trim();
+            state.apiKey = key;
+            localStorage.setItem('openai_api_key', key);
+            showToast("Đã lưu API Key!", "success");
+            closeSettingsModal();
+        }
+
+        function generateShareLink() {
+            playKidSound('click');
+            const key = document.getElementById('api-key-input').value.trim() || state.apiKey;
+            if (!key) {
+                showToast("Vui lòng nhập API Key trước khi tạo link!", "error");
+                return;
+            }
+            
+            // Tạo URL mới đính kèm tham số key
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('key', key);
+            
+            // Copy vào Clipboard
+            const tmpInput = document.createElement('input');
+            tmpInput.value = currentUrl.toString();
+            document.body.appendChild(tmpInput);
+            tmpInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tmpInput);
+            
+            showToast("Đã copy Link chứa Key! Hãy gửi cho học sinh.", "success");
+        }
+
+        function getRandomPromptPreset() {
+            playKidSound('click');
+            state.animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+            state.action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+            state.background = BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
+            state.style = STYLES[Math.floor(Math.random() * STYLES.length)];
+            renderOptionGrids();
+            updatePromptFormula();
+            showToast("Đã chọn ngẫu nhiên ý tưởng thú vị!", "info");
+        }
+
+        function resetAllSelections() {
+            playKidSound('click');
+            state.animal = ANIMALS[0];
+            state.action = ACTIONS[0];
+            state.background = BACKGROUNDS[0];
+            state.style = STYLES[0];
+            document.getElementById('extra-prompt').value = '';
+            renderOptionGrids();
+            updatePromptFormula();
+            showToast("Đã làm lại các lựa chọn!", "info");
+        }
+
+        function toggleSound() {
+            state.soundEnabled = !state.soundEnabled;
+            const soundBtn = document.getElementById('sound-btn');
+            soundBtn.innerHTML = state.soundEnabled ? 
+                `<i class="fa-solid fa-volume-high text-xs"></i><span>Âm thanh</span>` :
+                `<i class="fa-solid fa-volume-xmark text-xs"></i><span>Tắt tiếng</span>`;
+            showToast(state.soundEnabled ? "Đã bật âm thanh!" : "Đã tắt âm thanh", "info");
+        }
+
+        function playKidSound(type) {
+            if (!state.soundEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(450, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.08);
+                } else if (type === 'success') {
+                    const now = ctx.currentTime;
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.12);
+                    osc.frequency.setValueAtTime(783.99, now + 0.24);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.36);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.55);
+                    osc.start();
+                    osc.stop(now + 0.55);
+                }
+            } catch (e) {}
+        }
+
+        async function generateArtWithGemini() {
+            playKidSound('click');
+            triggerSparkleBurst();
+
+            const placeholder = document.getElementById('placeholder-state');
+            const loading = document.getElementById('loading-state');
+            const loadingText = document.getElementById('loading-step-text');
+            const loadingBar = document.getElementById('loading-bar');
+            const resultImg = document.getElementById('result-img');
+            const badge = document.getElementById('badge-status');
+            const imageActions = document.getElementById('image-actions');
+            const stickerToolbar = document.getElementById('sticker-toolbar');
+            const canvas = document.getElementById('drawing-canvas');
+            const storyBanner = document.getElementById('story-banner');
+
+            placeholder.classList.add('hidden');
+            resultImg.classList.add('hidden');
+            badge.classList.add('hidden');
+            imageActions.classList.add('hidden');
+            stickerToolbar.classList.add('hidden');
+            canvas.classList.add('hidden');
+            storyBanner.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            loadingBar.style.width = '20%';
+            loadingText.innerText = "Gửi ý tưởng kỳ diệu tới Cọ Thần AI Gemini...";
+
+            const extra = document.getElementById('extra-prompt').value.trim();
+            const englishPrompt = `cute ${state.animal.prompt}, ${state.action.prompt}, ${state.background.prompt}, ${state.style.prompt}${extra ? ', ' + extra : ''}, vibrant vivid pastel colors, masterpiece`;
+
+            let step1 = setTimeout(() => {
+                loadingBar.style.width = '60%';
+                loadingText.innerText = "Đang phác thảo đường nét nhân vật...";
+            }, 1000);
+
+            let step2 = setTimeout(() => {
+                loadingBar.style.width = '85%';
+                loadingText.innerText = "Tô màu rực rỡ & thêm ánh sáng thần tiên...";
+            }, 2500);
+
+            try {
+                let imgDataUrl = null;
+
+                // Nếu Giáo viên đã cài đặt API Key OpenAI
+                if (state.apiKey && state.apiKey.startsWith('sk-')) {
+                    loadingText.innerText = "Đang dùng bút thần OpenAI để vẽ...";
+                    
+                    const response = await fetch('https://api.openai.com/v1/images/generations', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${state.apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: "dall-e-2", // Sử dụng mô hình rẻ nhất của OpenAI
+                            prompt: englishPrompt,
+                            n: 1,
+                            size: "512x512"
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error?.message || "Lỗi API OpenAI");
+                    }
+
+                    const data = await response.json();
+                    imgDataUrl = data.data[0].url;
+
+                } else {
+                    // Nếu không có Key, dùng máy chủ tạo ảnh miễn phí cũ
+                    const encodedPrompt = encodeURIComponent(englishPrompt);
+                    const seed = Math.floor(Math.random() * 999999);
+                    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=600&height=600&seed=${seed}&nologo=true`;
+                    
+                    const tryLoadOnlineImage = (url) => {
+                        return new Promise((resolve, reject) => {
+                            const timeoutTimer = setTimeout(() => {
+                                reject(new Error("Timeout loading image"));
+                            }, 10000);
+
+                            const img = new Image();
+                            img.crossOrigin = 'anonymous';
+                            img.onload = () => {
+                                clearTimeout(timeoutTimer);
+                                resolve(url);
+                            };
+                            img.onerror = () => {
+                                clearTimeout(timeoutTimer);
+                                reject(new Error("Failed to load image url"));
+                            };
+                            img.src = url;
+                        });
+                    };
+
+                    imgDataUrl = await tryLoadOnlineImage(pollinationsUrl);
+                }
+
+                clearTimeout(step1);
+                clearTimeout(step2);
+
+                if (imgDataUrl) {
+                    loadingBar.style.width = '100%';
+                    state.currentDataUrl = imgDataUrl;
+                    resultImg.src = state.currentDataUrl;
+
+                    setTimeout(() => {
+                        loading.classList.add('hidden');
+                        resultImg.classList.remove('hidden');
+                        badge.classList.remove('hidden');
+                        imageActions.classList.remove('hidden');
+                        stickerToolbar.classList.remove('hidden');
+                        setupCanvasOverlay();
+                        playKidSound('success');
+                        triggerSparkleBurst();
+                        showToast("Tranh đã tạo xong cực đẹp!", "success");
+                    }, 200);
+                } else {
+                    // Fallback instantly to canvas illustration so NO student is stuck
+                    clearTimeout(step1);
+                    clearTimeout(step2);
+                    loading.classList.add('hidden');
+                    createRichCanvasFallback();
+                }
+
+            } catch (err) {
+                console.error("Lỗi tạo ảnh:", err);
+                clearTimeout(step1);
+                clearTimeout(step2);
+                loading.classList.add('hidden');
+                
+                // Hiển thị thông báo lỗi nếu API Key hết hạn hoặc sai
+                if (err.message) {
+                    showToast("Thông báo: " + err.message, "error");
+                }
+                
+                createRichCanvasFallback();
+            }
+        }
+
+        function createRichCanvasFallback() {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 800;
+            tempCanvas.height = 800;
+            const ctx = tempCanvas.getContext('2d');
+
+            const bgId = state.background.id;
+
+            let skyGrad = ctx.createLinearGradient(0, 0, 0, 800);
+            if (bgId === 'vutru') {
+                skyGrad.addColorStop(0, '#0F0C20');
+                skyGrad.addColorStop(0.5, '#2D114D');
+                skyGrad.addColorStop(1, '#6B21A8');
+            } else if (bgId === 'baibien') {
+                skyGrad.addColorStop(0, '#38BDF8');
+                skyGrad.addColorStop(0.5, '#FDE047');
+                skyGrad.addColorStop(1, '#F97316');
+            } else if (bgId === 'daiduong') {
+                skyGrad.addColorStop(0, '#0284C7');
+                skyGrad.addColorStop(0.5, '#06B6D4');
+                skyGrad.addColorStop(1, '#115E59');
+            } else {
+                skyGrad.addColorStop(0, '#A7F3D0');
+                skyGrad.addColorStop(0.5, '#6EE7B7');
+                skyGrad.addColorStop(1, '#047857');
+            }
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, 800, 800);
+
+            ctx.fillStyle = bgId === 'baibien' ? '#FDE047' : '#059669';
+            ctx.beginPath();
+            ctx.arc(200, 750, 450, Math.PI, 0, false);
+            ctx.fill();
+
+            const haloGrad = ctx.createRadialGradient(400, 360, 20, 400, 360, 300);
+            haloGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+            haloGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = haloGrad;
+            ctx.beginPath();
+            ctx.arc(400, 360, 300, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.font = '220px "Times New Roman"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(state.animal.emoji, 400, 360);
+
+            ctx.font = '100px "Times New Roman"';
+            ctx.fillText(state.action.emoji, 530, 450);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+            ctx.roundRect(60, 600, 680, 140, 28);
+            ctx.fill();
+
+            ctx.fillStyle = '#3B0764';
+            ctx.font = 'bold 36px "Times New Roman"';
+            ctx.fillText(`${state.animal.vi.toUpperCase()} ${state.animal.emoji} - ${state.action.vi.toUpperCase()}`, 400, 655);
+
+            ctx.fillStyle = '#6B21A8';
+            ctx.font = '22px "Times New Roman"';
+            ctx.fillText(`✨ Bối cảnh: ${state.background.vi} • Phong cách: ${state.style.vi}`, 400, 702);
+
+            state.currentDataUrl = tempCanvas.toDataURL('image/png');
+            const resultImg = document.getElementById('result-img');
+            resultImg.src = state.currentDataUrl;
+            resultImg.classList.remove('hidden');
+
+            document.getElementById('badge-status').classList.remove('hidden');
+            document.getElementById('image-actions').classList.remove('hidden');
+            document.getElementById('sticker-toolbar').classList.remove('hidden');
+            setupCanvasOverlay();
+            playKidSound('success');
+            triggerSparkleBurst();
+            showToast("Đã tạo bức tranh minh họa cực xinh cho bé!", "success");
+        }
+
+        function setupCanvasOverlay() {
+            const canvas = document.getElementById('drawing-canvas');
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+            canvas.classList.remove('hidden');
+            state.stickers = [];
+            redrawStickers();
+        }
+
+        function setActiveSticker(emoji) {
+            playKidSound('click');
+            state.selectedSticker = emoji;
+            showToast(`Đã chọn ${emoji}. Chạm vào tranh để dán!`, "info");
+        }
+
+        function addStickerAt(emoji, x, y) {
+            playKidSound('click');
+            state.stickers.push({ emoji, x, y, size: 36 });
+            redrawStickers();
+            triggerSparkleAt(x, y);
+        }
+
+        function clearStickers() {
+            playKidSound('click');
+            state.stickers = [];
+            redrawStickers();
+            showToast("Đã xóa dán!", "info");
+        }
+
+        function redrawStickers() {
+            const canvas = document.getElementById('drawing-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            state.stickers.forEach(s => {
+                ctx.font = `${s.size}px "Times New Roman"`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(s.emoji, s.x, s.y);
+            });
+        }
+
+        function getMergedArtworkCanvas(callback) {
+            const combinedCanvas = document.createElement('canvas');
+            combinedCanvas.width = 800;
+            combinedCanvas.height = 800;
+            const ctx = combinedCanvas.getContext('2d');
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, 800, 800);
+                
+                const overlay = document.getElementById('drawing-canvas');
+                const scaleX = overlay.width ? (800 / overlay.width) : 1;
+                const scaleY = overlay.height ? (800 / overlay.height) : 1;
+
+                state.stickers.forEach(s => {
+                    ctx.font = `${s.size * scaleX}px "Times New Roman"`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(s.emoji, s.x * scaleX, s.y * scaleY);
+                });
+
+                callback(combinedCanvas);
+            };
+            img.src = state.currentDataUrl || document.getElementById('result-img').src;
+        }
+
+        function downloadArtwork() {
+            playKidSound('click');
+            getMergedArtworkCanvas((canvas) => {
+                const link = document.createElement('a');
+                link.download = `Tranh_Be_Ve_${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast("Đã tải bức tranh về máy! 📄", "success");
+            });
+        }
+
+        function saveToGallery() {
+            playKidSound('click');
+            getMergedArtworkCanvas((canvas) => {
+                const dataUrl = canvas.toDataURL('image/png');
+                const gallery = JSON.parse(localStorage.getItem('kid_art_gallery') || '[]');
+                
+                const newItem = {
+                    id: Date.now(),
+                    title: `${state.animal.vi} ${state.animal.emoji}`,
+                    date: new Date().toLocaleDateString('vi-VN'),
+                    image: dataUrl
+                };
+
+                gallery.unshift(newItem);
+                localStorage.setItem('kid_art_gallery', JSON.stringify(gallery));
+                showToast("Đã lưu vào Bộ sưu tập!", "success");
+            });
+        }
+
+        function loadGalleryFromLocalStorage() {
+            const gallery = JSON.parse(localStorage.getItem('kid_art_gallery') || '[]');
+            const grid = document.getElementById('gallery-grid');
+            const emptyMsg = document.getElementById('empty-gallery-msg');
+
+            if (!grid) return;
+
+            if (gallery.length === 0) {
+                grid.innerHTML = '';
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+
+            emptyMsg.classList.add('hidden');
+            grid.innerHTML = gallery.map(item => `
+                <div class="bg-purple-50/70 p-2 rounded-2xl border border-purple-100 flex flex-col group relative overflow-hidden shadow-xs hover:shadow-md transition">
+                    <img src="${item.image}" alt="${item.title}" class="w-full aspect-square object-cover rounded-xl shadow-xs">
+                    <div class="mt-1.5 flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-purple-950 truncate">${item.title}</span>
+                        <button onclick="deleteGalleryItem(${item.id})" class="text-xs text-red-400 hover:text-red-600 ml-1 cursor-pointer" title="Xóa">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteGalleryItem(id) {
+            playKidSound('click');
+            let gallery = JSON.parse(localStorage.getItem('kid_art_gallery') || '[]');
+            gallery = gallery.filter(item => item.id !== id);
+            localStorage.setItem('kid_art_gallery', JSON.stringify(gallery));
+            loadGalleryFromLocalStorage();
+            showToast("Đã xóa!", "info");
+        }
+
+        function clearGallery() {
+            playKidSound('click');
+            localStorage.removeItem('kid_art_gallery');
+            loadGalleryFromLocalStorage();
+            showToast("Đã xóa tất cả bộ sưu tập!", "info");
+        }
+
+        function printColoringSheet() {
+            playKidSound('click');
+            getMergedArtworkCanvas((canvas) => {
+                const ctx = canvas.getContext('2d');
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imgData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    const val = avg > 140 ? 255 : (avg < 75 ? 0 : 210);
+                    data[i] = val;
+                    data[i + 1] = val;
+                    data[i + 2] = val;
+                }
+                ctx.putImageData(imgData, 0, 0);
+
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Tranh Tô Màu Cho Bé - ${state.animal.vi}</title>
+                        <style>
+                            body { font-family: 'Times New Roman', serif; text-align: center; padding: 20px; }
+                            h1 { color: #1e1b4b; margin-bottom: 5px; }
+                            p { color: #64748b; font-size: 15px; margin-bottom: 20px; }
+                            img { max-width: 520px; width: 100%; border: 3px solid #000; border-radius: 16px; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>TRANH TÔ MÀU DÀNH CHO BÉ: ${state.animal.vi.toUpperCase()}</h1>
+                        <p>Hành động: ${state.action.vi} • Bối cảnh: ${state.background.vi}</p>
+                        <img src="${canvas.toDataURL('image/png')}" />
+                        <script>
+                            window.onload = function() { window.print(); }
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            });
+        }
+
+        async function tellFairyStory() {
+            playKidSound('click');
+            const storyBanner = document.getElementById('story-banner');
+            const storyText = document.getElementById('story-text');
+            
+            storyBanner.classList.remove('hidden');
+            storyText.innerText = "✨ Đang tạo câu chuyện thần tiên cho bé...";
+
+            state.currentStory = `Ngày xửa ngày xưa, tại ${state.background.vi.toLowerCase()}, bạn ${state.animal.vi} vô cùng vui vẻ khi đang ${state.action.vi.toLowerCase()}. Bạn ấy mỉm cười và vẫy tay chào tất cả các bạn nhỏ!`;
+            storyText.innerText = `"${state.currentStory}"`;
+            playFairyStoryTTS();
+        }
+
+        function playFairyStoryTTS() {
+            if (!state.currentStory) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(state.currentStory);
+                utterance.lang = 'vi-VN';
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showToast("Trình duyệt không hỗ trợ đọc giọng nói!", "info");
+            }
+        }
+
+        let sparkles = [];
+        function initSparkleCanvas() {
+            const canvas = document.getElementById('sparkle-canvas');
+            const wrapper = document.getElementById('canvas-wrapper');
+            canvas.width = wrapper.clientWidth || 300;
+            canvas.height = wrapper.clientHeight || 300;
+            const ctx = canvas.getContext('2d');
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = sparkles.length - 1; i >= 0; i--) {
+                    const s = sparkles[i];
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    s.life -= 0.025;
+                    const radius = Math.max(0, s.size * s.life);
+                    if (s.life > 0 && radius > 0) {
+                        ctx.fillStyle = s.color;
+                        ctx.beginPath();
+                        ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        sparkles.splice(i, 1);
+                    }
+                }
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        function triggerSparkleAt(x, y) {
+            const colors = ['#FDE047', '#F472B6', '#C084FC', '#60A5FA', '#34D399'];
+            for (let i = 0; i < 15; i++) {
+                sparkles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
+                    size: Math.random() * 5 + 3,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1.0
+                });
+            }
+        }
+
+        function triggerSparkleBurst() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const cx = wrapper.clientWidth / 2;
+            const cy = wrapper.clientHeight / 2;
+            triggerSparkleAt(cx, cy);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-red-600' : 'bg-purple-700');
+            
+            toast.className = `${bgClass} text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-1.5 border border-white/20`;
+            toast.innerHTML = `<span>✨</span> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2400);
+        }
+    </script>
+</body>
+</html>
